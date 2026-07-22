@@ -34,7 +34,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, BinaryIO, TextIO
 
-
 FILE_BUFFER_SIZE = 1024 * 1024
 DEFAULT_PROGRESS_INTERVAL = 100_000
 DEFAULT_MAX_ERROR_MESSAGES = 100
@@ -103,10 +102,7 @@ def is_csv_scalar(value: Any) -> bool:
     if not isinstance(value, SCALAR_TYPES):
         return False
 
-    return not (
-        isinstance(value, float)
-        and not math.isfinite(value)
-    )
+    return not (isinstance(value, float) and not math.isfinite(value))
 
 
 def scalar_or_empty(value: Any) -> str | int | float | bool:
@@ -117,18 +113,13 @@ def scalar_or_empty(value: Any) -> str | int | float | bool:
 def normalize_text(value: str) -> str:
     normalized = unicodedata.normalize("NFKD", value)
     without_accents = "".join(
-        character
-        for character in normalized
-        if not unicodedata.combining(character)
+        character for character in normalized if not unicodedata.combining(character)
     )
     return " ".join(without_accents.upper().split())
 
 
 def is_allowed_championship(value: Any) -> bool:
-    return (
-        isinstance(value, str)
-        and normalize_text(value) in ALLOWED_CHAMPIONSHIPS
-    )
+    return isinstance(value, str) and normalize_text(value) in ALLOWED_CHAMPIONSHIPS
 
 
 def valid_date_or_empty(value: Any) -> str:
@@ -147,11 +138,7 @@ def join_colors(value: Any) -> str:
     if not isinstance(value, list):
         return ""
 
-    return "|".join(
-        str(color)
-        for color in value
-        if is_csv_scalar(color)
-    )
+    return "|".join(str(color) for color in value if is_csv_scalar(color))
 
 
 def club_to_csv_row(club: dict[str, Any]) -> dict[str, Any]:
@@ -159,9 +146,7 @@ def club_to_csv_row(club: dict[str, Any]) -> dict[str, Any]:
         "Id do Clube": scalar_or_empty(club.get("club_id")),
         "Nome": scalar_or_empty(club.get("name")),
         "Campeonato": scalar_or_empty(club.get("championship")),
-        "Data de Fundação": valid_date_or_empty(
-            club.get("founding_date")
-        ),
+        "Data de Fundação": valid_date_or_empty(club.get("founding_date")),
         "Cidade": scalar_or_empty(club.get("city")),
         "Estado": scalar_or_empty(club.get("state")),
         "País": scalar_or_empty(club.get("country")),
@@ -178,19 +163,13 @@ def player_to_csv_row(
 ) -> dict[str, Any]:
     return {
         "Id do Clube": scalar_or_empty(club_id),
-        "Id do Jogador": scalar_or_empty(
-            player.get("player_id")
-        ),
+        "Id do Jogador": scalar_or_empty(player.get("player_id")),
         "Nome": scalar_or_empty(player.get("name")),
         "Idade": scalar_or_empty(player.get("age")),
         "Gols": scalar_or_empty(player.get("goals")),
-        "Data de Estreia": valid_date_or_empty(
-            player.get("debut_date")
-        ),
+        "Data de Estreia": valid_date_or_empty(player.get("debut_date")),
         "Posição": scalar_or_empty(player.get("position")),
-        "Número da Camisa": scalar_or_empty(
-            player.get("shirt_number")
-        ),
+        "Número da Camisa": scalar_or_empty(player.get("shirt_number")),
     }
 
 
@@ -232,12 +211,8 @@ class JsonlCsvExporter:
 
         self.clubs_path = output_dir / "clubs.csv"
         self.players_path = output_dir / "players.csv"
-        self.clubs_temp = (
-            output_dir / f".clubs.{process_id}.csv.tmp"
-        )
-        self.players_temp = (
-            output_dir / f".players.{process_id}.csv.tmp"
-        )
+        self.clubs_temp = output_dir / f".clubs.{process_id}.csv.tmp"
+        self.players_temp = output_dir / f".players.{process_id}.csv.tmp"
 
     def run(self) -> ProcessingStats:
         self._prepare()
@@ -257,8 +232,7 @@ class JsonlCsvExporter:
     def _prepare(self) -> None:
         if not self.input_path.is_file():
             raise FileNotFoundError(
-                "Arquivo de entrada não encontrado: "
-                f"{self.input_path}"
+                "Arquivo de entrada não encontrado: " f"{self.input_path}"
             )
 
         self.output_dir.mkdir(
@@ -361,15 +335,11 @@ class JsonlCsvExporter:
         if club is None:
             return
 
-        if not is_allowed_championship(
-            club.get("championship")
-        ):
+        if not is_allowed_championship(club.get("championship")):
             self.stats.filtered_clubs += 1
             return
 
-        clubs_writer.writerow(
-            club_to_csv_row(club)
-        )
+        clubs_writer.writerow(club_to_csv_row(club))
         self.stats.clubs_written += 1
 
         self._write_players(
@@ -405,8 +375,7 @@ class JsonlCsvExporter:
             text = raw_line.decode("utf-8")
         except UnicodeDecodeError as error:
             self._record_error(
-                f"Linha {line_number} ignorada: "
-                f"UTF-8 inválido ({error})."
+                f"Linha {line_number} ignorada: " f"UTF-8 inválido ({error})."
             )
             return None
 
@@ -431,8 +400,7 @@ class JsonlCsvExporter:
             RecursionError,
         ) as error:
             self._record_error(
-                f"Linha {line_number} ignorada: "
-                f"JSON inválido ({error})."
+                f"Linha {line_number} ignorada: " f"JSON inválido ({error})."
             )
             return None
 
@@ -440,8 +408,7 @@ class JsonlCsvExporter:
             return club
 
         self._record_error(
-            f"Linha {line_number} ignorada: "
-            "o registro não é um objeto JSON."
+            f"Linha {line_number} ignorada: " "o registro não é um objeto JSON."
         )
         return None
 
@@ -505,11 +472,7 @@ class JsonlCsvExporter:
         if self.progress_interval <= 0:
             return
 
-        if (
-            self.stats.lines_read
-            % self.progress_interval
-            != 0
-        ):
+        if self.stats.lines_read % self.progress_interval != 0:
             return
 
         print(
@@ -521,12 +484,8 @@ class JsonlCsvExporter:
         )
 
     def _commit(self) -> None:
-        self.clubs_temp.replace(
-            self.clubs_path
-        )
-        self.players_temp.replace(
-            self.players_path
-        )
+        self.clubs_temp.replace(self.clubs_path)
+        self.players_temp.replace(self.players_path)
 
     def _remove_temporary_files(self) -> None:
         for path in (
@@ -548,19 +507,14 @@ def non_negative_integer(value: str) -> int:
         ) from error
 
     if number < 0:
-        raise argparse.ArgumentTypeError(
-            "o valor deve ser maior ou igual a zero"
-        )
+        raise argparse.ArgumentTypeError("o valor deve ser maior ou igual a zero")
 
     return number
 
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description=(
-            "Processa um JSONL de clubes e gera "
-            "clubs.csv e players.csv."
-        )
+        description=("Processa um JSONL de clubes e gera " "clubs.csv e players.csv.")
     )
 
     parser.add_argument(
@@ -580,20 +534,14 @@ def parse_arguments() -> argparse.Namespace:
         type=non_negative_integer,
         default=DEFAULT_PROGRESS_INTERVAL,
         metavar="LINHAS",
-        help=(
-            "Exibe progresso a cada N linhas; "
-            "0 desativa."
-        ),
+        help=("Exibe progresso a cada N linhas; " "0 desativa."),
     )
     parser.add_argument(
         "--max-error-messages",
         type=non_negative_integer,
         default=DEFAULT_MAX_ERROR_MESSAGES,
         metavar="QUANTIDADE",
-        help=(
-            "Quantidade máxima de erros "
-            "exibidos individualmente."
-        ),
+        help=("Quantidade máxima de erros " "exibidos individualmente."),
     )
 
     return parser.parse_args()
@@ -620,9 +568,7 @@ def execute() -> int:
         input_path=arguments.input,
         output_dir=arguments.output,
         progress_interval=arguments.progress_every,
-        max_error_messages=(
-            arguments.max_error_messages
-        ),
+        max_error_messages=(arguments.max_error_messages),
     )
 
     try:
