@@ -4,13 +4,13 @@ Projeto desenvolvido a partir de desafio feito pela empresa BigDataCorp.
 
 # Descrição
 
-Este projeto consiste em uma versão menor de projetos que consistem em ler um grande arquivo, aplicar regras de negócio e de formatação, e produzir arquivos de saída consistentes. O problema se baseia em um arquivo JSONL ( sample_clubes.jsonl , no repositorio), onde cada linha é um objeto JSON representando um clube de futebol. Cada clube tem um conjunto de dados próprios e uma lista de jogadores. O programa deve ler esse arquivo e gerar dois arquivos CSV:
+Este projeto consiste em uma versão menor de projetos que consistem em ler um grande arquivo, aplicar regras de negócio e de formatação, e produzir arquivos de saída consistentes. O problema se baseia em um arquivo JSONL ( sample_clubes.jsonl , no repositório), onde cada linha é um objeto JSON representando um clube de futebol. Cada clube tem um conjunto de dados próprios e uma lista de jogadores. O programa deve ler esse arquivo e gerar dois arquivos CSV:
 1. clubs.csv — um registro por clube (relação 1:1).
 2. players.csv — um registro por jogador (relação 1:N a partir da lista dentro de cada
 clube).
 
-## Regras de negocio
-A saida deve seguir essas regras de negocio
+## Regras de negócio
+A saída deve seguir essas regras de negocio
 * Filtro por campeonato: gere dados apenas para clubes que disputam a Série A ou a
 Série B. Clubes de qualquer outro campeonato não entram em nenhum dos dois arquivos
 (nem o clube, nem seus jogadores).
@@ -46,10 +46,9 @@ programa pensando nesse cenário.
 2. [Descrição](#descrição)  
 3. [Iniciando](#iniciando)  
    - [Requisitos](#requisitos)  
-   - [Instalação](#instalação)  
    - [Executando o Projeto](#executando-projeto)  
-5. [Executando os Testes](#executando-os-testes)
-7. [Autor](#autor)  
+4. [Executando os Testes](#executando-os-testes)
+5. [Autor](#autor)  
 
 # Iniciando
 
@@ -81,6 +80,14 @@ Verifique também o `pip`:
 
 ```powershell
 python -m pip --version
+```
+
+## Clonar projeto do git.
+* Abrir terminal
+* Navegar até a pasta para onde desejar importar o projeto
+* Executar o comando
+```
+git clone git@github.com:Pauloh7/DesafioBigDataCorp.git
 ```
 
 ## Criação do ambiente virtual
@@ -137,19 +144,12 @@ deactivate
 ```
 ## Instalação
 
-### Clonar projeto do git.
-* Abrir terminal
-* Navegar até a pasta para onde desejar importar o projeto
-* Executar o comando
-```
-git clone git@github.com:Pauloh7/DesafioBigDataCorp.git
-```
 ## Executando Projeto
 * Abrir terminal ou powershell
 * Navegar até a pasta do projeto
 * Executar o comando
 ```
-python club_batch_processor.py --input caminhodoinput\arquivo.jsonl --output pastadosoutputs
+python club_batch_processor.py --input sample_clubes.jsonl --output resultado
 ```
 
 ### Executando os Testes
