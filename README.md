@@ -19,7 +19,7 @@ Série B. Clubes de qualquer outro campeonato não entram em nenhum dos dois arq
 pertence. Um clube sem jogadores não gera nenhuma linha em players.csv , mas
 continua aparecendo em clubs.csv (se passar no filtro).
 
-* colors : a lista de cores deve ser unida em um único campo, separada por | (pipe). Ex.:
+* Colors : a lista de cores deve ser unida em um único campo, separada por | (pipe). Ex.:
 ["preto", "branco"] → preto|branco . Lista vazia ou ausente → campo vazio.
 
 * Datas: toda data de saída deve estar em yyyy-MM-dd . Se o valor de origem não for uma
