@@ -11,25 +11,32 @@ clube).
 
 ## Regras de negocio
 A saida deve seguir essas regras de negocio
-Filtro por campeonato: gere dados apenas para clubes que disputam a Série A ou a
+* Filtro por campeonato: gere dados apenas para clubes que disputam a Série A ou a
 Série B. Clubes de qualquer outro campeonato não entram em nenhum dos dois arquivos
 (nem o clube, nem seus jogadores).
-Ligação 1:N: cada linha de players.csv carrega o club_id do clube a que o jogador
+
+* Ligação 1:N: cada linha de players.csv carrega o club_id do clube a que o jogador
 pertence. Um clube sem jogadores não gera nenhuma linha em players.csv , mas
 continua aparecendo em clubs.csv (se passar no filtro).
-colors : a lista de cores deve ser unida em um único campo, separada por | (pipe). Ex.:
+
+* colors : a lista de cores deve ser unida em um único campo, separada por | (pipe). Ex.:
 ["preto", "branco"] → preto|branco . Lista vazia ou ausente → campo vazio.
-Datas: toda data de saída deve estar em yyyy-MM-dd . Se o valor de origem não for uma
+
+* Datas: toda data de saída deve estar em yyyy-MM-dd . Se o valor de origem não for uma
 data válida, deixe o campo vazio — a linha continua no arquivo normalmente.
-Campos vazios: campos ausentes ou nulos no JSON viram campo vazio no CSV.
-Formato do CSV: arquivos em UTF-8, com linha de cabeçalho, separados por vírgula.
+
+* Campos vazios: campos ausentes ou nulos no JSON viram campo vazio no CSV.
+
+* Formato do CSV: arquivos em UTF-8, com linha de cabeçalho, separados por vírgula.
 Campos que contenham vírgula, aspas ou quebra de linha devem ser escapados
 corretamente (padrão RFC 4180: campo entre aspas duplas, aspas internas duplicadas).
-Robustez: o arquivo de exemplo é limpo, mas a base real com que vamos rodar o seu
+
+* Robustez: o arquivo de exemplo é limpo, mas a base real com que vamos rodar o seu
 código pode conter registros malformados ou incompletos. O programa não deve
 abortar por causa de um registro problemático: registros inválidos ficam de fora do
 resultado e o processamento segue para os demais.
-Volume de dados: o arquivo de exemplo é pequeno, mas a base real com que vamos
+
+* Volume de dados: o arquivo de exemplo é pequeno, mas a base real com que vamos
 rodar o seu código pode ser muito grande (muitos milhões de registros). Escreva o
 programa pensando nesse cenário.
 
