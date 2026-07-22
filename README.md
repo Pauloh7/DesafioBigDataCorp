@@ -4,7 +4,34 @@ Projeto desenvolvido a partir de desafio feito pela empresa BigDataCorp.
 
 # Descrição
 
-Este projeto consiste em uma versão menor de projetos quem consistem em ler um arquivo grande, aplicar regras de negócio e de formatação, e produzir arquivos de saída consistentes.
+Este projeto consiste em uma versão menor de projetos que consistem em ler um grande arquivo, aplicar regras de negócio e de formatação, e produzir arquivos de saída consistentes. O problema se baseia em um arquivo JSONL ( sample_clubes.jsonl , no repositorio), onde cada linha é um objeto JSON representando um clube de futebol. Cada clube tem um conjunto de dados próprios e uma lista de jogadores. O programa deve ler esse arquivo e gerar dois arquivos CSV:
+1. clubs.csv — um registro por clube (relação 1:1).
+2. players.csv — um registro por jogador (relação 1:N a partir da lista dentro de cada
+clube).
+
+## Regras de negocio
+A saida deve seguir essas regras de negocio
+Filtro por campeonato: gere dados apenas para clubes que disputam a Série A ou a
+Série B. Clubes de qualquer outro campeonato não entram em nenhum dos dois arquivos
+(nem o clube, nem seus jogadores).
+Ligação 1:N: cada linha de players.csv carrega o club_id do clube a que o jogador
+pertence. Um clube sem jogadores não gera nenhuma linha em players.csv , mas
+continua aparecendo em clubs.csv (se passar no filtro).
+colors : a lista de cores deve ser unida em um único campo, separada por | (pipe). Ex.:
+["preto", "branco"] → preto|branco . Lista vazia ou ausente → campo vazio.
+Datas: toda data de saída deve estar em yyyy-MM-dd . Se o valor de origem não for uma
+data válida, deixe o campo vazio — a linha continua no arquivo normalmente.
+Campos vazios: campos ausentes ou nulos no JSON viram campo vazio no CSV.
+Formato do CSV: arquivos em UTF-8, com linha de cabeçalho, separados por vírgula.
+Campos que contenham vírgula, aspas ou quebra de linha devem ser escapados
+corretamente (padrão RFC 4180: campo entre aspas duplas, aspas internas duplicadas).
+Robustez: o arquivo de exemplo é limpo, mas a base real com que vamos rodar o seu
+código pode conter registros malformados ou incompletos. O programa não deve
+abortar por causa de um registro problemático: registros inválidos ficam de fora do
+resultado e o processamento segue para os demais.
+Volume de dados: o arquivo de exemplo é pequeno, mas a base real com que vamos
+rodar o seu código pode ser muito grande (muitos milhões de registros). Escreva o
+programa pensando nesse cenário.
 
 ## 📖 Sumário
 
