@@ -142,7 +142,6 @@ Ao terminar, execute:
 ```powershell
 deactivate
 ```
-## Instalação
 
 ## Executando Projeto
 * Abrir terminal ou powershell
