@@ -1,32 +1,12 @@
-"""
-Converte um arquivo JSONL de clubes em dois arquivos CSV:
-
-- clubs.csv: um registro por clube;
-- players.csv: um registro por jogador, relacionado ao clube pelo ID.
-
-Política adotada para dados inválidos:
-- clubes fora da Série A ou Série B são filtrados com seus jogadores;
-- linhas com UTF-8 inválido, JSON inválido ou JSON que não seja objeto
-  são ignoradas;
-- campos escalares ausentes, nulos ou com tipos incompatíveis viram vazio;
-- datas inválidas viram vazio;
-- entradas inválidas em "colors" são ignoradas, e as válidas são unidas por "|";
-- clube sem "players" continua sendo exportado;
-- se "players" não for uma lista, o clube é mantido e os jogadores são ignorados;
-- jogador que não seja objeto JSON é ignorado sem descartar o clube;
-- arquivos finais só substituem os anteriores após processamento bem-sucedido.
-"""
-
 from __future__ import annotations
 
 import argparse
 import csv
 import json
-import math
 import os
 import sys
 import unicodedata
-from collections.abc import Generator
+from collections.abc import Generator, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import date
@@ -39,8 +19,6 @@ DEFAULT_PROGRESS_INTERVAL = 100_000
 DEFAULT_MAX_ERROR_MESSAGES = 100
 
 ALLOWED_CHAMPIONSHIPS = {"SERIE A", "SERIE B"}
-SCALAR_TYPES = (str, int, float, bool)
-
 CLUBS_CSV_COLUMNS = [
     "Id do Clube",
     "Nome",
@@ -98,15 +76,17 @@ class ErrorReporter:
             )
 
 
-def is_csv_scalar(value: Any) -> bool:
-    if not isinstance(value, SCALAR_TYPES):
-        return False
-
-    return not (isinstance(value, float) and not math.isfinite(value))
+def text_or_empty(value: Any) -> str:
+    """Retorna somente valores textuais; outros tipos viram campo vazio."""
+    return value if isinstance(value, str) else ""
 
 
-def scalar_or_empty(value: Any) -> str | int | float | bool:
-    return value if is_csv_scalar(value) else ""
+def integer_or_empty(value: Any) -> int | str:
+    """Retorna somente inteiros reais, rejeitando bool e outros tipos."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        return ""
+
+    return value
 
 
 @lru_cache(maxsize=32)
@@ -138,21 +118,21 @@ def join_colors(value: Any) -> str:
     if not isinstance(value, list):
         return ""
 
-    return "|".join(str(color) for color in value if is_csv_scalar(color))
+    return "|".join(color for color in value if isinstance(color, str))
 
 
 def club_to_csv_row(club: dict[str, Any]) -> dict[str, Any]:
     return {
-        "Id do Clube": scalar_or_empty(club.get("club_id")),
-        "Nome": scalar_or_empty(club.get("name")),
-        "Campeonato": scalar_or_empty(club.get("championship")),
+        "Id do Clube": text_or_empty(club.get("club_id")),
+        "Nome": text_or_empty(club.get("name")),
+        "Campeonato": text_or_empty(club.get("championship")),
         "Data de Fundação": valid_date_or_empty(club.get("founding_date")),
-        "Cidade": scalar_or_empty(club.get("city")),
-        "Estado": scalar_or_empty(club.get("state")),
-        "País": scalar_or_empty(club.get("country")),
-        "Estádio": scalar_or_empty(club.get("stadium")),
-        "Presidente": scalar_or_empty(club.get("president")),
-        "Apelido": scalar_or_empty(club.get("nickname")),
+        "Cidade": text_or_empty(club.get("city")),
+        "Estado": text_or_empty(club.get("state")),
+        "País": text_or_empty(club.get("country")),
+        "Estádio": text_or_empty(club.get("stadium")),
+        "Presidente": text_or_empty(club.get("president")),
+        "Apelido": text_or_empty(club.get("nickname")),
         "Cores": join_colors(club.get("colors")),
     }
 
@@ -162,14 +142,14 @@ def player_to_csv_row(
     club_id: Any,
 ) -> dict[str, Any]:
     return {
-        "Id do Clube": scalar_or_empty(club_id),
-        "Id do Jogador": scalar_or_empty(player.get("player_id")),
-        "Nome": scalar_or_empty(player.get("name")),
-        "Idade": scalar_or_empty(player.get("age")),
-        "Gols": scalar_or_empty(player.get("goals")),
+        "Id do Clube": text_or_empty(club_id),
+        "Id do Jogador": text_or_empty(player.get("player_id")),
+        "Nome": text_or_empty(player.get("name")),
+        "Idade": integer_or_empty(player.get("age")),
+        "Gols": integer_or_empty(player.get("goals")),
         "Data de Estreia": valid_date_or_empty(player.get("debut_date")),
-        "Posição": scalar_or_empty(player.get("position")),
-        "Número da Camisa": scalar_or_empty(player.get("shirt_number")),
+        "Posição": text_or_empty(player.get("position")),
+        "Número da Camisa": integer_or_empty(player.get("shirt_number")),
     }
 
 
@@ -263,7 +243,9 @@ class JsonlCsvExporter:
             BinaryIO,
             csv.DictWriter,
             csv.DictWriter,
-        ]
+        ],
+        None,
+        None,
     ]:
         with (
             self.input_path.open(
@@ -436,7 +418,7 @@ class JsonlCsvExporter:
         self,
         club: dict[str, Any],
         line_number: int,
-    ) -> Generator[dict[str, Any]]:
+    ) -> Iterator[dict[str, Any]]:
         players = club.get("players")
 
         if players is None:
