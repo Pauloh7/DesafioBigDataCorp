@@ -48,7 +48,8 @@ programa pensando nesse cenário.
    - [Requisitos](#requisitos)  
    - [Executando o Projeto](#executando-projeto)  
 4. [Executando os Testes](#executando-os-testes)
-5. [Autor](#autor)  
+5. [Decisões técnicas](#decisoes-tecnicas)
+6. [Autor](#autor)  
 
 # Iniciando
 
@@ -105,9 +106,13 @@ python -m venv .venv
 ```
 
 ### Ativação no Prompt de Comando
-
+#### Windows
 ```cmd
 .venv\Scripts\activate.bat
+```
+#### Linux
+```
+source .venv/bin/activate
 ```
 
 Quando o ambiente estiver ativo, o terminal mostrará algo semelhante a:
@@ -150,6 +155,17 @@ deactivate
 ```
 python club_batch_processor.py --input sample_clubes.jsonl --output resultado
 ```
+Após o processamento, a pasta informada em `--output` conterá:
+
+```text
+resultado/
+├── clubs.csv
+└── players.csv
+```
+### Parâmetros opcionais
+
+- `--progress-every N`: exibe o progresso a cada N linhas. Use `0` para desativar.
+- `--max-error-messages N`: limita a quantidade de erros exibidos individualmente.
 
 ### Executando os Testes
 #### No Windows
@@ -161,6 +177,14 @@ python club_batch_processor.py --input sample_clubes.jsonl --output resultado
 ```powershell
 python -m pytest
 ```
+
+## Decisões técnicas
+
+- O JSONL é lido linha por linha para evitar carregar bases grandes na memória.
+- A entrada é aberta em modo binário para que uma linha com UTF-8 inválido não interrompa o restante do processamento.
+- Os CSVs são inicialmente escritos em arquivos temporários e substituem os arquivos finais somente após o processamento.
+- O módulo `csv` é usado para aplicar corretamente o escape de vírgulas, aspas e quebras de linha.
+- Mensagens de erro e relatórios de progresso são limitados para evitar excesso de saída em bases grandes.
 
 ## Autor
 [Paulo Henrique De Souza Gomes](https://www.linkedin.com/in/paulo-henrique-4a849139/)

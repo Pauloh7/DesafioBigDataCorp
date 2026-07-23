@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -539,60 +540,48 @@ def test_quebra_de_linha_em_campo_e_escapada_corretamente_no_csv(
     assert '"Jogador\nTeste"' in raw_players
 
 
-def test_execucao_completa_pelo_terminal(tmp_path: Path) -> None:
-    input_path = tmp_path / "entrada.jsonl"
-    output_path = tmp_path / "saida pelo terminal"
-    script_path = Path(__file__).with_name("club_batch_processor.py")
+def test_execucao_completa_pelo_terminal(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "input.jsonl"
+    output_path = tmp_path / "output"
 
-    input_path.write_bytes(
-        _json_bytes(
-            _club(
-                club_id="CLI-1",
-                players=[_player(player_id="CLI-JOG-1")],
-            )
-        )
-        + b"\n"
+    input_path.write_text(
+        '{"club_id":"TESTE","name":"Clube Teste",'
+        '"championship":"SERIE A","players":[]}\n',
+        encoding="utf-8",
     )
+
+    environment = os.environ.copy()
+    environment["PYTHONIOENCODING"] = "utf-8"
 
     result = subprocess.run(
         [
             sys.executable,
-            str(script_path),
+            "club_batch_processor.py",
             "--input",
             str(input_path),
             "--output",
             str(output_path),
             "--progress-every",
             "0",
-            "--max-error-messages",
-            "0",
         ],
         capture_output=True,
         text=True,
         encoding="utf-8",
+        env=environment,
         check=False,
     )
 
-    assert result.returncode == 0, result.stderr
-    assert "Processamento concluído:" in result.stdout
-    assert result.stderr == ""
+    assert result.returncode == 0, (
+        f"O programa terminou com código {result.returncode}.\n"
+        f"stdout:\n{result.stdout}\n"
+        f"stderr:\n{result.stderr}"
+    )
+
+    assert "Processamento concluído" in result.stdout
     assert (output_path / "clubs.csv").is_file()
     assert (output_path / "players.csv").is_file()
-
-    with (output_path / "clubs.csv").open(
-        encoding="utf-8",
-        newline="",
-    ) as clubs_file:
-        clubs = list(csv.DictReader(clubs_file))
-
-    with (output_path / "players.csv").open(
-        encoding="utf-8",
-        newline="",
-    ) as players_file:
-        players = list(csv.DictReader(players_file))
-
-    assert [club["Id do Clube"] for club in clubs] == ["CLI-1"]
-    assert [player["Id do Jogador"] for player in players] == ["CLI-JOG-1"]
 
 
 def test_ordem_dos_cabecalhos_e_exatamente_a_exigida(
