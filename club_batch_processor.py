@@ -26,7 +26,7 @@ import math
 import os
 import sys
 import unicodedata
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import date
@@ -258,7 +258,7 @@ class JsonlCsvExporter:
     @contextmanager
     def _open_files(
         self,
-    ) -> Iterator[
+    ) -> Generator[
         tuple[
             BinaryIO,
             csv.DictWriter,
@@ -436,7 +436,7 @@ class JsonlCsvExporter:
         self,
         club: dict[str, Any],
         line_number: int,
-    ) -> Iterator[dict[str, Any]]:
+    ) -> Generator[dict[str, Any]]:
         players = club.get("players")
 
         if players is None:
